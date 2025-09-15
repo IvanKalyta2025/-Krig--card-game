@@ -34,6 +34,12 @@ body.game-active {
   text-align: center;
 }
 
+@media (max-width: 768px) {
+  body {
+    padding: 20px;
+    flex-direction: column;
+  }
+}
 /* Общие стили для кнопок. */
 .game-button {
   padding: 15px 30px;
