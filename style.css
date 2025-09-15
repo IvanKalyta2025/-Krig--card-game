@@ -117,7 +117,7 @@ body.game-active {
     overflow-x: auto;
     /* Запрещаем перенос карт на новую строку */
     flex-wrap: nowrap;
-    justify-content: flex-start;
+    justify-content: center;
     gap: 10px;
   }
 }
