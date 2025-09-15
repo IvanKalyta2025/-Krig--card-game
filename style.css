@@ -34,12 +34,6 @@ body.game-active {
   text-align: center;
 }
 
-@media (max-width: 768px) {
-  body {
-    padding: 20px;
-    flex-direction: column;
-  }
-}
 /* Общие стили для кнопок. */
 .game-button {
   padding: 15px 30px;
@@ -87,6 +81,9 @@ body.game-active {
   gap: 15px;
   margin-top: 10px;
   justify-content: center;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding-bottom: 20px;
 }
 
 /* Стили для каждой отдельной карты. */
