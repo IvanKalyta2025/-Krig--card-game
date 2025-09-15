@@ -81,9 +81,6 @@ body.game-active {
   gap: 15px;
   margin-top: 10px;
   justify-content: center;
-  overflow-x: auto;
-  white-space: nowrap;
-  padding-bottom: 20px;
 }
 
 /* Стили для каждой отдельной карты. */
@@ -106,6 +103,16 @@ body.game-active {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.7);
 }
 
+@media (max-width: 768px) {
+  .card-container {
+    /* Включаем горизонтальный скролл */
+    overflow-x: auto;
+    /* Запрещаем перенос карт на новую строку */
+    white-space: nowrap;
+    /* Выравниваем карты по левому краю для скроллинга */
+    justify-content: flex-start;
+  }
+}
 /* Стили для карты, которая уже была сыграна. */
 .card.played {
   cursor: default; /* Возвращаем курсор в обычное состояние. */
