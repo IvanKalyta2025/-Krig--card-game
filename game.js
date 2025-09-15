@@ -8,6 +8,7 @@ const nextRoundButton = document.getElementById("nextRoundButton");
 const startButton = document.getElementById("startButton");
 const gameModeSelection = document.getElementById("gameModeSelection");
 const singlePlayerButton = document.getElementById("singlePlayerButton");
+const computerCardSection = document.getElementById("computerCardSection");
 
 const deck = [
   { name: "HOVEDKAMPVOGN", imageUrl: "card/12skade.png", power: 12 },
@@ -67,7 +68,7 @@ function playCard(playerCardIndex) {
   );
   const computerCard = computerHandCards[computerCardIndex];
   computerHandCards.splice(computerCardIndex, 1);
-
+  computerCardSection.classList.remove("hidden");
   renderPlayedCards(playerCard, computerCard);
 
   determineRoundWinner(playerCard, computerCard);
@@ -116,7 +117,7 @@ function nextRound() {
 
   playerHand.innerHTML = "";
   computerPlayedCardContainer.innerHTML = "";
-
+  computerCardSection.classList.add("hidden");
   nextRoundButton.classList.add("hidden");
   updateGameInfo();
   renderPlayerHand();
