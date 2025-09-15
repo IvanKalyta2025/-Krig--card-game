@@ -1,14 +1,15 @@
 const gameTable = document.getElementById("gameTable");
 const playerHand = document.getElementById("playerHand");
-const computerPlayedCardContainer = document.getElementById("computerPlayedCard");
+const computerPlayedCardContainer =
+  document.getElementById("computerPlayedCard");
 const roundDisplay = document.getElementById("roundDisplay");
 const scoreDisplay = document.getElementById("scoreDisplay");
 const roundResultDisplay = document.getElementById("roundResultDisplay");
-const nextRoundButton = document.getElementById("nextRoundButton");
 const startButton = document.getElementById("startButton");
 const gameModeSelection = document.getElementById("gameModeSelection");
 const singlePlayerButton = document.getElementById("singlePlayerButton");
 const computerCardSection = document.getElementById("computerCardSection");
+const clickSound = document.getElementById("click-sound");
 
 const deck = [
   { name: "HOVEDKAMPVOGN", imageUrl: "card/12skade.png", power: 12 },
@@ -53,12 +54,18 @@ function renderPlayerHand() {
 }
 
 function updateGameInfo() {
-  roundDisplay.textContent = `Раунд: ${currentRound} / 4`;
-  scoreDisplay.textContent = `Счет: Du ${playerScore} - ${computerScore} Datamaskinen`;
+  roundDisplay.textContent = `ROUND: ${currentRound} / 4`;
+  scoreDisplay.textContent = `SCORE: Du ${playerScore} - ${computerScore} Datamaskinen`;
 }
 
 function playCard(playerCardIndex) {
   if (playerHandCards.length === 0) return;
+
+  if (clickSound) {
+    clickSound.play().catch((error) => {
+      console.log("Звук клика заблокирован.", error);
+    });
+  }
 
   const playerCard = playerHandCards[playerCardIndex];
   playerHandCards.splice(playerCardIndex, 1);
@@ -74,7 +81,9 @@ function playCard(playerCardIndex) {
   determineRoundWinner(playerCard, computerCard);
 
   if (currentRound < 4) {
-    nextRoundButton.classList.remove("hidden");
+    setTimeout(() => {
+      nextRound();
+    }, 3000);
   } else {
     endGame();
   }
@@ -118,7 +127,6 @@ function nextRound() {
   playerHand.innerHTML = "";
   computerPlayedCardContainer.innerHTML = "";
   computerCardSection.classList.add("hidden");
-  nextRoundButton.classList.add("hidden");
   updateGameInfo();
   renderPlayerHand();
 }
@@ -133,12 +141,12 @@ function endGame() {
     finalMessage = `Spillet er over! Uavgjort med poengsummen ${playerScore} - ${computerScore}.`;
   }
   roundResultDisplay.textContent = finalMessage;
-  nextRoundButton.textContent = "Start på nytt";
-  nextRoundButton.removeEventListener("click", nextRound);
-  nextRoundButton.addEventListener("click", () => {
-    window.location.reload();
-  });
-  nextRoundButton.classList.remove("hidden");
+
+  const newGameButton = document.createElement("button");
+  newGameButton.textContent = "Start på nytt";
+  newGameButton.classList.add("game-button");
+  newGameButton.addEventListener("click", () => window.location.reload());
+  roundResultDisplay.appendChild(newGameButton);
 }
 
 function startGame() {
@@ -148,10 +156,8 @@ function startGame() {
   dealHands();
   renderPlayerHand();
   updateGameInfo();
-  nextRoundButton.classList.add("hidden");
   roundResultDisplay.textContent = "";
   computerPlayedCardContainer.innerHTML = "";
-
 
   const backgroundMusic = document.getElementById("background-music");
   if (backgroundMusic) {
@@ -172,5 +178,3 @@ singlePlayerButton.addEventListener("click", () => {
   document.body.classList.add("game-active");
   startGame();
 });
-
-nextRoundButton.addEventListener("click", nextRound);
