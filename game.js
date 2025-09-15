@@ -4,11 +4,10 @@ const gameResultDisplay = document.createElement("h2");
 playerHand.parentNode.insertBefore(gameResultDisplay, playerHand.nextSibling);
 
 const deck = [
-  // Убедись, что путь к папке с изображениями правильный
-  { name: 'Ace_of_Spades', imageUrl: 'card/Ace_of_Spades.png', power: 22 },
-  { name: 'Jack_of_Diamonds', imageUrl: 'card/Jack_of_Diamonds.png', power: 12 },
-  { name: 'King_of_Spades', imageUrl: 'card/King_of_Spades.png', power: 18 },
-  { name: 'Queen_of_Diamonds', imageUrl: 'card/Queen_of_Diamonds.png', power: 15 },
+  { name: 'HOVEDKAMPVOGN', imageUrl: 'card/12skade.png', power: 12 },
+  { name: 'FLYTENDE ANGREPSFARTØY', imageUrl: 'card/22skade.png', power: 22 },
+  { name: 'KAMPTANK', imageUrl: 'card/18skade.png', power: 18 },
+  { name: 'INFANTERI', imageUrl: 'card/15skade.png', power: 15 },
 ];
 
 function getRandomCard() {
