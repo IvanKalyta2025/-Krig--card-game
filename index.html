@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <button id="startButton" class="game-button">Nytt spill</button>
+
+    <div id="gameModeSelection" style="display: none">
+      <button id="singlePlayerButton" class="game-button">Enkletspiller</button>
+      <button id="multiplayerButton" class="game-button">Flerspiller</button>
+    </div>
+    <!-- тут я создаю игральный стол и его блок, есть вопрос по 
+     hidden потому что я это не менял в script.js
+    -->
+    <div id="gameTable" class="hidden">
+      <h2>Dine kort:</h2>
+      <div id="playerHand" class="card-container"></div>
+      <button id="deelCardButtton" class="game-button">Del ut kort</button>
+    </div>
+    <script src="script.js"></script>
+    <script src="game.js"></script>
+  </body>
+</html>
