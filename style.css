@@ -94,6 +94,7 @@ body.game-active {
   background-color: #eee;
   background-size: cover;
   background-position: center;
+  flex-shrink: 0;
   cursor: pointer; /* Делаем курсор "рукой". */
   transition: transform 0.2s, box-shadow 0.2s; /* Плавный эффект при наведении. */
 }
@@ -115,9 +116,9 @@ body.game-active {
     /* Включаем горизонтальный скролл только для этого блока */
     overflow-x: auto;
     /* Запрещаем перенос карт на новую строку */
-    white-space: nowrap;
-    /* Выравниваем карты по левому краю для скроллинга */
+    flex-wrap: nowrap;
     justify-content: flex-start;
+    gap: 10px;
   }
 }
 /* Стили для карты, которая уже была сыграна. */
