@@ -82,6 +82,7 @@ body.game-active {
   gap: 15px;
   margin-top: 10px;
   justify-content: center;
+  padding-top: 10px;
 }
 
 /* Стили для каждой отдельной карты. */
