@@ -21,7 +21,7 @@ body {
   background-attachment: fixed;
   background-position: center;
   transition: background-image 0.5s;
-  color: white; /* Цвет текста. */
+  color: rgb(255, 255, 255); /* Цвет текста. */
 }
 
 /* Стили для тела документа, когда игра активна. */
@@ -48,11 +48,11 @@ body.game-active {
 }
 
 #startButton {
-  background-color: #337ab7;
+  background-color: #2d3237;
 }
 
 #startButton:hover {
-  background-color: #286090;
+  background-color: #172634;
 }
 
 #singlePlayerButton {

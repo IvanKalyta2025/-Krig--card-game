@@ -1,7 +1,6 @@
 const gameTable = document.getElementById("gameTable");
 const playerHand = document.getElementById("playerHand");
-const computerPlayedCardContainer =
-  document.getElementById("computerPlayedCard");
+const computerPlayedCardContainer = document.getElementById("computerPlayedCard");
 const roundDisplay = document.getElementById("roundDisplay");
 const scoreDisplay = document.getElementById("scoreDisplay");
 const roundResultDisplay = document.getElementById("roundResultDisplay");
@@ -28,6 +27,7 @@ let playerScore = 0;
 let computerScore = 0;
 let currentRound = 1;
 
+// на коллоду из 4 карт тут разложено 4 array. котрые нужно увеличить в случае повышения уровней карт 
 function shuffleDeck(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -35,6 +35,7 @@ function shuffleDeck(array) {
   }
 }
 
+// так же нужно менять потому что значения относяться к коллоде
 function dealHands() {
   shuffleDeck(deck);
   playerHandCards = deck.slice(0, 4);
@@ -63,7 +64,7 @@ function playCard(playerCardIndex) {
 
   if (clickSound) {
     clickSound.play().catch((error) => {
-      console.log("Звук клика заблокирован.", error);
+      console.log("Klikklyden er blokkertокирован.", error);
     });
   }
 
@@ -161,20 +162,26 @@ function startGame() {
 
   const backgroundMusic = document.getElementById("background-music");
   if (backgroundMusic) {
-    backgroundMusic.play().catch((error) => {
-      console.log("Автоматическое воспроизведение заблокировано.");
+// запуск ссылки после определения и переименования.
+    // backgroundMusic.play().catch((error) => {  запуск и вызов проверки на ошибки с помощью catch
+    //   console.log("Autoavspilling er blokkert."); 
+    backgroundMusic.play().catch((error) => { 
+      console.log("Autoavspilling er blokkert.");
     });
   }
 }
 
+
+// скрытие кнопок до момента нажатия на кнопу start и удаление 
 startButton.addEventListener("click", () => {
   startButton.classList.add("hidden");
   gameModeSelection.classList.remove("hidden");
 });
 
+// не особо понятно 
 singlePlayerButton.addEventListener("click", () => {
   gameModeSelection.classList.add("hidden");
   gameTable.classList.remove("hidden");
-  document.body.classList.add("game-active");
+  document.body.classList.add("game-active"); 
   startGame();
 });
