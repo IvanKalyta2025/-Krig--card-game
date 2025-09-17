@@ -1,6 +1,7 @@
 const gameTable = document.getElementById("gameTable");
 const playerHand = document.getElementById("playerHand");
-const computerPlayedCardContainer = document.getElementById("computerPlayedCard");
+const computerPlayedCardContainer =
+  document.getElementById("computerPlayedCard");
 const roundDisplay = document.getElementById("roundDisplay");
 const scoreDisplay = document.getElementById("scoreDisplay");
 const roundResultDisplay = document.getElementById("roundResultDisplay");
@@ -9,6 +10,7 @@ const gameModeSelection = document.getElementById("gameModeSelection");
 const singlePlayerButton = document.getElementById("singlePlayerButton");
 const computerCardSection = document.getElementById("computerCardSection");
 const clickSound = document.getElementById("click-sound");
+const playerBonusHand = document.getElementById("playerBonusHand");
 
 const deck = [
   { name: "HOVEDKAMPVOGN", imageUrl: "card/12skade.png", power: 12 },
@@ -20,14 +22,40 @@ const deck = [
   { name: "SKADE-42", imageUrl: "card/42skade.png", power: 42 },
   { name: "SKADE-58", imageUrl: "card/58skade.png", power: 58 },
 ];
+// добавленый новый дек для новых бонусных карт
+const bonusDeck = [
+  {
+    name: "Rocket Ground Air",
+    imageUrl: "bonuscard/bonus_skade25.png",
+    ability: "bonus_damage",
+  },
+  {
+    name: "Retreat and attack again",
+    imageUrl: "bonuscard/return_turn.png",
+    ability: "return_turn",
+  },
+  {
+    name: "Conduct Reconnaissance",
+    imageUrl: "bonuscard/show_card.png",
+    ability: "show_card",
+  },
+];
 
 let playerHandCards = [];
 let computerHandCards = [];
+let playerBonusCard = [];
+let computerBonusCard = [];
+// создаю новые массивы для бонусных карт
 let playerScore = 0;
 let computerScore = 0;
 let currentRound = 1;
+let playerPlayedCard = null;
+let computerPlayedCard = null;
+let playerUsedBonusCard = false;
+let computerUsedBonusCard = false;
 
-// на коллоду из 4 карт тут разложено 4 array. котрые нужно увеличить в случае повышения уровней карт 
+
+// на коллоду из 4 карт тут разложено 4 array. котрые нужно увеличить в случае повышения уровней карт
 function shuffleDeck(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -36,11 +64,34 @@ function shuffleDeck(array) {
 }
 
 // так же нужно менять потому что значения относяться к коллоде
+//добавили сюда какие то копии и создали раздачу из двух коллод
 function dealHands() {
-  shuffleDeck(deck);
-  playerHandCards = deck.slice(0, 4);
-  computerHandCards = deck.slice(4, 8);
+  const mainDeckCopy = [...deck];
+  const bonusDeckCopy = [...bonusDeck];
+  shuffleDeck(mainDeckCopy);
+  shuffleDeck(bonusDeckCopy);
+  playerHandCards = mainDeckCopy.slice(0, 4);
+  computerHandCards = mainDeckCopy.slice(4, 8);
+  playerBonusCard = bonusDeckCopy.slice(0, 1);
+  computerBonusCard = bonusDeckCopy.slice(1, 2);
 }
+
+function useBonusCard(ability) {
+  if (ability === "bonus_damage" && !playerUsedBonusCard && playerPlayedCard) {
+    const bonusDamage = 25;
+    const playerCardWithBonus = {
+      ...playerPlayedCard,
+      power: playerPlayedCard.power + bonusDamage,
+    };
+    console.log("Применена бонусная карта 'bonus_damage'.");
+    determineRoundWinner(playerCardWithBonus, computerPlayedCard);
+    playerUsedBonusCard = true;
+    
+    playerBonusCard.pop(); // Удаляем карту после использования
+    renderBonusHand(); // Обновляем отображение руки
+  }
+}
+
 
 function renderPlayerHand() {
   playerHand.innerHTML = "";
@@ -53,6 +104,17 @@ function renderPlayerHand() {
     playerHand.appendChild(cardElement);
   });
 }
+function renderBonusHand() {
+  const playerBonusHand = document.getElementById("playerBonusHand");
+  playerBonusHand.innerHTML = "";
+  playerBonusCard.forEach((card) => {
+    const cardElement = document.createElement("div");
+    cardElement.classList.add("card", "bonus-card");
+    cardElement.style.backgroundImage = `url(${card.imageUrl})`;
+    cardElement.addEventListener("click", () => useBonusCard(card.ability));
+    playerBonusHand.appendChild(cardElement);
+  });
+}
 
 function updateGameInfo() {
   roundDisplay.textContent = `ROUND: ${currentRound} / 4`;
@@ -60,31 +122,31 @@ function updateGameInfo() {
 }
 
 function playCard(playerCardIndex) {
-  if (playerHandCards.length === 0) return;
+if (playerHandCards.length === 0) return;
 
   if (clickSound) {
     clickSound.play().catch((error) => {
-      console.log("Klikklyden er blokkertокирован.", error);
+      console.log("Klikklyden er blokkert.", error);
     });
   }
 
-  const playerCard = playerHandCards[playerCardIndex];
+  playerPlayedCard = playerHandCards[playerCardIndex];
   playerHandCards.splice(playerCardIndex, 1);
 
   const computerCardIndex = Math.floor(
     Math.random() * computerHandCards.length
   );
-  const computerCard = computerHandCards[computerCardIndex];
+  computerPlayedCard = computerHandCards[computerCardIndex];
   computerHandCards.splice(computerCardIndex, 1);
   computerCardSection.classList.remove("hidden");
-  renderPlayedCards(playerCard, computerCard);
+  renderPlayedCards(playerPlayedCard, computerPlayedCard);
 
-  determineRoundWinner(playerCard, computerCard);
+  determineRoundWinner(playerPlayedCard, computerPlayedCard);
 
   if (currentRound < 4) {
     setTimeout(() => {
       nextRound();
-    }, 3000);
+    }, 6000);
   } else {
     endGame();
   }
@@ -123,8 +185,12 @@ function determineRoundWinner(playerCard, computerCard) {
 
 function nextRound() {
   currentRound++;
-  roundResultDisplay.textContent = "";
+  playerPlayedCard = null;
+  computerPlayedCard = null;
+  playerUsedBonusCard = false;
+  computerUsedBonusCard = false;
 
+  roundResultDisplay.textContent = "";
   playerHand.innerHTML = "";
   computerPlayedCardContainer.innerHTML = "";
   computerCardSection.classList.add("hidden");
@@ -154,7 +220,12 @@ function startGame() {
   playerScore = 0;
   computerScore = 0;
   currentRound = 1;
+  playerPlayedCard = null;
+  computerPlayedCard = null;
+  playerUsedBonusCard = false;
+  computerUsedBonusCard = false;
   dealHands();
+  renderBonusHand();
   renderPlayerHand();
   updateGameInfo();
   roundResultDisplay.textContent = "";
@@ -162,26 +233,25 @@ function startGame() {
 
   const backgroundMusic = document.getElementById("background-music");
   if (backgroundMusic) {
-// запуск ссылки после определения и переименования.
+    // запуск ссылки после определения и переименования.
     // backgroundMusic.play().catch((error) => {  запуск и вызов проверки на ошибки с помощью catch
-    //   console.log("Autoavspilling er blokkert."); 
-    backgroundMusic.play().catch((error) => { 
+    //   console.log("Autoavspilling er blokkert.");
+    backgroundMusic.play().catch((error) => {
       console.log("Autoavspilling er blokkert.");
     });
   }
 }
 
-
-// скрытие кнопок до момента нажатия на кнопу start и удаление 
+// скрытие кнопок до момента нажатия на кнопу start и удаление
 startButton.addEventListener("click", () => {
   startButton.classList.add("hidden");
   gameModeSelection.classList.remove("hidden");
 });
 
-// не особо понятно 
+// не особо понятно
 singlePlayerButton.addEventListener("click", () => {
   gameModeSelection.classList.add("hidden");
   gameTable.classList.remove("hidden");
-  document.body.classList.add("game-active"); 
+  document.body.classList.add("game-active");
   startGame();
 });
