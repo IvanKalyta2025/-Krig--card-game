@@ -11,6 +11,7 @@ const singlePlayerButton = document.getElementById("singlePlayerButton");
 const computerCardSection = document.getElementById("computerCardSection");
 const clickSound = document.getElementById("click-sound");
 const playerBonusHand = document.getElementById("playerBonusHand");
+const bonustext = document.getElementById("bonus-text");
 
 const deck = [
   { name: "HOVEDKAMPVOGN", imageUrl: "card/12skade.png", power: 12 },
@@ -22,7 +23,8 @@ const deck = [
   { name: "SKADE-42", imageUrl: "card/42skade.png", power: 42 },
   { name: "SKADE-58", imageUrl: "card/58skade.png", power: 58 },
 ];
-// добавленый новый дек для новых бонусных карт
+
+// добавленый новый дек для новых бонусных картd
 const bonusDeck = [
   {
     name: "Rocket Ground Air",
@@ -54,7 +56,6 @@ let computerPlayedCard = null;
 let playerUsedBonusCard = false;
 let computerUsedBonusCard = false;
 
-
 // на коллоду из 4 карт тут разложено 4 array. котрые нужно увеличить в случае повышения уровней карт
 function shuffleDeck(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -62,6 +63,8 @@ function shuffleDeck(array) {
     [array[i], array[j]] = [array[j], array[i]];
   }
 }
+
+
 
 // так же нужно менять потому что значения относяться к коллоде
 //добавили сюда какие то копии и создали раздачу из двух коллод
@@ -83,14 +86,32 @@ function useBonusCard(ability) {
       ...playerPlayedCard,
       power: playerPlayedCard.power + bonusDamage,
     };
-    console.log("Применена бонусная карта 'bonus_damage'.");
+    console.log("не знаю что я тут делаю");
     determineRoundWinner(playerCardWithBonus, computerPlayedCard);
     playerUsedBonusCard = true;
-    
+
     playerBonusCard.pop(); // Удаляем карту после использования
     renderBonusHand(); // Обновляем отображение руки
-  }
+
+    //проверяеться массив на карты и если количенство 0 то тогда выполняеться скрытие текста.
+
+    if (playerBonusCard.length === 0) {
+      bonustext.style.display = 'none'; 
+ }
 }
+}
+
+// function deletetextbonuscard(){
+//   bonustext.innerHTML = "";
+//   const cardElement = document.createElement("div");
+//     newGameButton.textContent = "сюда текст";
+
+//   const cardElement = document.createElement("div");
+// cardElement.classList.add("card", "bonus-card");
+// cardElement.style.backgroundImage = `url(${card.imageUrl})`;
+// cardElement.addEventListener("click", () => useBonusCard(card.ability));
+// playerBonusHand.appendChild(cardElement);
+// computerCardSection.classList.remove("hidden");
 
 
 function renderPlayerHand() {
@@ -110,6 +131,7 @@ function renderBonusHand() {
   playerBonusCard.forEach((card) => {
     const cardElement = document.createElement("div");
     cardElement.classList.add("card", "bonus-card");
+    // cardElement.textContent = "text inni function renderBonusHand";
     cardElement.style.backgroundImage = `url(${card.imageUrl})`;
     cardElement.addEventListener("click", () => useBonusCard(card.ability));
     playerBonusHand.appendChild(cardElement);
@@ -122,7 +144,7 @@ function updateGameInfo() {
 }
 
 function playCard(playerCardIndex) {
-if (playerHandCards.length === 0) return;
+  if (playerHandCards.length === 0) return;
 
   if (clickSound) {
     clickSound.play().catch((error) => {
