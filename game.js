@@ -55,6 +55,8 @@ let playerPlayedCard = null;
 let computerPlayedCard = null;
 let playerUsedBonusCard = false;
 let computerUsedBonusCard = false;
+let lastRoundOutcome = null;
+let nextRoundTimeoutId = null;
 
 // на коллоду из 4 карт тут разложено 4 array. котрые нужно увеличить в случае повышения уровней карт
 function shuffleDeck(array) {
@@ -80,25 +82,116 @@ function dealHands() {
 }
 
 function useBonusCard(ability) {
-  if (ability === "bonus_damage" && !playerUsedBonusCard && playerPlayedCard) {
+  if (playerUsedBonusCard) {
+    return;
+  }
+
+  if (ability === "show_card") {
+    if (computerHandCards.length === 0) {
+      announceMessage("Det er ingen kort å speide på.");
+    } else {
+      const revealedCard = computerHandCards.reduce((strongest, current) => {
+        return current.power > strongest.power ? current : strongest;
+      }, computerHandCards[0]);
+
+      computerCardSection.classList.remove("hidden");
+      computerPlayedCardContainer.innerHTML = "";
+      const cardElement = document.createElement("div");
+      cardElement.classList.add("card", "peek");
+      cardElement.style.backgroundImage = `url(${revealedCard.imageUrl})`;
+      computerPlayedCardContainer.appendChild(cardElement);
+
+      announceMessage(
+        `Speiderkort: Motstanderen har minst ett kort med ${revealedCard.power} skade.`
+      );
+
+      setTimeout(() => {
+        if (!computerPlayedCard) {
+          computerPlayedCardContainer.innerHTML = "";
+          computerCardSection.classList.add("hidden");
+        }
+      }, 2500);
+    }
+
+    playerUsedBonusCard = true;
+    playerBonusCard.splice(0, 1);
+    renderBonusHand();
+    return;
+  }
+
+  if (ability === "return_turn") {
+    if (!playerPlayedCard || !computerPlayedCard || !lastRoundOutcome) {
+      announceMessage(
+        "Du kan bare bruke tilbaketrekkingskortet etter at kort er spilt."
+      );
+      return;
+    }
+
+    undoOutcome(lastRoundOutcome);
+    lastRoundOutcome = null;
+
+    const returnedPlayerCard = { ...playerPlayedCard };
+    delete returnedPlayerCard.boosted;
+    playerHandCards.push(returnedPlayerCard);
+    playerPlayedCard = null;
+
+    computerHandCards.push(computerPlayedCard);
+    computerPlayedCard = null;
+
+    if (nextRoundTimeoutId) {
+      clearTimeout(nextRoundTimeoutId);
+      nextRoundTimeoutId = null;
+    }
+
+    roundResultDisplay.className = "";
+    announceMessage(
+      "Du trakk deg tilbake. Velg et nytt kort for å spille runden på nytt."
+    );
+    renderPlayerHand();
+    computerPlayedCardContainer.innerHTML = "";
+    computerCardSection.classList.add("hidden");
+    updateGameInfo();
+
+    playerUsedBonusCard = true;
+    playerBonusCard.splice(0, 1);
+    renderBonusHand();
+    return;
+  }
+
+  if (!playerPlayedCard || !computerPlayedCard) {
+    return;
+  }
+
+  if (ability === "bonus_damage") {
     const bonusDamage = 25;
-    const playerCardWithBonus = {
+    const previousOutcome = lastRoundOutcome;
+
+    if (previousOutcome) {
+      undoOutcome(previousOutcome);
+    }
+
+    playerPlayedCard = {
       ...playerPlayedCard,
       power: playerPlayedCard.power + bonusDamage,
+      boosted: true,
     };
-    console.log("не знаю что я тут делаю");
-    determineRoundWinner(playerCardWithBonus, computerPlayedCard);
+
+    renderPlayedCards(playerPlayedCard, computerPlayedCard);
+
+    const newOutcome = compareCards(playerPlayedCard, computerPlayedCard);
+    applyOutcome(newOutcome);
+    lastRoundOutcome = newOutcome;
+
+    updateRoundResultDisplay(
+      newOutcome,
+      "Du brukte bonuskortet og økte skaden med 25!"
+    );
+    updateGameInfo();
+
     playerUsedBonusCard = true;
-
-    playerBonusCard.pop(); // Удаляем карту после использования
-    renderBonusHand(); // Обновляем отображение руки
-
-    //проверяеться массив на карты и если количенство 0 то тогда выполняеться скрытие текста.
-
-    if (playerBonusCard.length === 0) {
-      bonustext.style.display = 'none'; 
- }
-}
+    playerBonusCard.splice(0, 1);
+    renderBonusHand();
+  }
 }
 
 // function deletetextbonuscard(){
@@ -126,16 +219,16 @@ function renderPlayerHand() {
   });
 }
 function renderBonusHand() {
-  const playerBonusHand = document.getElementById("playerBonusHand");
   playerBonusHand.innerHTML = "";
   playerBonusCard.forEach((card) => {
     const cardElement = document.createElement("div");
     cardElement.classList.add("card", "bonus-card");
-    // cardElement.textContent = "text inni function renderBonusHand";
     cardElement.style.backgroundImage = `url(${card.imageUrl})`;
     cardElement.addEventListener("click", () => useBonusCard(card.ability));
     playerBonusHand.appendChild(cardElement);
   });
+
+  bonustext.style.display = playerBonusCard.length ? "" : "none";
 }
 
 function updateGameInfo() {
@@ -166,7 +259,10 @@ function playCard(playerCardIndex) {
   determineRoundWinner(playerPlayedCard, computerPlayedCard);
 
   if (currentRound < 4) {
-    setTimeout(() => {
+    if (nextRoundTimeoutId) {
+      clearTimeout(nextRoundTimeoutId);
+    }
+    nextRoundTimeoutId = setTimeout(() => {
       nextRound();
     }, 6000);
   } else {
@@ -180,6 +276,9 @@ function renderPlayedCards(playerCard, computerCard) {
 
   const playerCardElement = document.createElement("div");
   playerCardElement.classList.add("card", "played");
+  if (playerCard.boosted) {
+    playerCardElement.classList.add("boosted");
+  }
   playerCardElement.style.backgroundImage = `url(${playerCard.imageUrl})`;
   playerHand.appendChild(playerCardElement);
 
@@ -189,30 +288,90 @@ function renderPlayedCards(playerCard, computerCard) {
   computerPlayedCardContainer.appendChild(computerCardElement);
 }
 
-function determineRoundWinner(playerCard, computerCard) {
-  if (playerCard.power > computerCard.power) {
-    playerScore++;
-    roundResultDisplay.textContent = "Du vant runden!";
-    roundResultDisplay.className = "win";
-  } else if (playerCard.power < computerCard.power) {
-    computerScore++;
-    roundResultDisplay.textContent = "Datamaskinen vant runden!";
-    roundResultDisplay.className = "lose";
-  } else {
-    roundResultDisplay.textContent = "Uavgjort!";
-    roundResultDisplay.className = "draw";
+function compareCards(playerCard, computerCard) {
+  if (!playerCard || !computerCard) {
+    return null;
   }
+  if (playerCard.power > computerCard.power) {
+    return "player";
+  }
+  if (playerCard.power < computerCard.power) {
+    return "computer";
+  }
+  return "draw";
+}
+
+function applyOutcome(outcome) {
+  if (outcome === "player") {
+    playerScore++;
+  } else if (outcome === "computer") {
+    computerScore++;
+  }
+}
+
+function undoOutcome(outcome) {
+  if (outcome === "player" && playerScore > 0) {
+    playerScore--;
+  } else if (outcome === "computer" && computerScore > 0) {
+    computerScore--;
+  }
+}
+
+function updateRoundResultDisplay(outcome, customMessage = "") {
+  let message = "";
+  let className = "";
+
+  if (outcome === "player") {
+    message = "Du vant runden!";
+    className = "win";
+  } else if (outcome === "computer") {
+    message = "Datamaskinen vant runden!";
+    className = "lose";
+  } else if (outcome === "draw") {
+    message = "Uavgjort!";
+    className = "draw";
+  }
+
+  if (customMessage) {
+    message = `${message} ${customMessage}`.trim();
+  }
+
+  roundResultDisplay.textContent = message;
+  roundResultDisplay.className = className;
+}
+
+function announceMessage(message) {
+  roundResultDisplay.textContent = message;
+  roundResultDisplay.className = "";
+}
+
+function determineRoundWinner(playerCard, computerCard) {
+  const outcome = compareCards(playerCard, computerCard);
+  if (!outcome) {
+    return;
+  }
+
+  applyOutcome(outcome);
+  lastRoundOutcome = outcome;
+  updateRoundResultDisplay(outcome);
   updateGameInfo();
 }
 
 function nextRound() {
+  if (nextRoundTimeoutId) {
+    clearTimeout(nextRoundTimeoutId);
+    nextRoundTimeoutId = null;
+  }
+
   currentRound++;
   playerPlayedCard = null;
   computerPlayedCard = null;
   playerUsedBonusCard = false;
   computerUsedBonusCard = false;
+  lastRoundOutcome = null;
 
   roundResultDisplay.textContent = "";
+  roundResultDisplay.className = "";
   playerHand.innerHTML = "";
   computerPlayedCardContainer.innerHTML = "";
   computerCardSection.classList.add("hidden");
@@ -221,6 +380,11 @@ function nextRound() {
 }
 
 function endGame() {
+  if (nextRoundTimeoutId) {
+    clearTimeout(nextRoundTimeoutId);
+    nextRoundTimeoutId = null;
+  }
+
   let finalMessage = "";
   if (playerScore > computerScore) {
     finalMessage = `Spillet er over! Du vant med poengsummen ${playerScore} - ${computerScore}!`;
@@ -229,6 +393,7 @@ function endGame() {
   } else {
     finalMessage = `Spillet er over! Uavgjort med poengsummen ${playerScore} - ${computerScore}.`;
   }
+  roundResultDisplay.className = "";
   roundResultDisplay.textContent = finalMessage;
 
   const newGameButton = document.createElement("button");
@@ -239,6 +404,11 @@ function endGame() {
 }
 
 function startGame() {
+  if (nextRoundTimeoutId) {
+    clearTimeout(nextRoundTimeoutId);
+    nextRoundTimeoutId = null;
+  }
+
   playerScore = 0;
   computerScore = 0;
   currentRound = 1;
@@ -246,11 +416,13 @@ function startGame() {
   computerPlayedCard = null;
   playerUsedBonusCard = false;
   computerUsedBonusCard = false;
+  lastRoundOutcome = null;
   dealHands();
   renderBonusHand();
   renderPlayerHand();
   updateGameInfo();
   roundResultDisplay.textContent = "";
+  roundResultDisplay.className = "";
   computerPlayedCardContainer.innerHTML = "";
 
   const backgroundMusic = document.getElementById("background-music");

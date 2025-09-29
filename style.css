@@ -32,7 +32,14 @@ body.game-active {
 /* Стили для игровой таблицы. */
 #gameTable {
   text-align: center;
-  max-width: 100%;
+  width: min(900px, 90vw);
+  background-color: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  margin: 20px auto;
 }
 
 /* Общие стили для кнопок. */
@@ -87,8 +94,9 @@ body.game-active {
 
 /* Стили для каждой отдельной карты. */
 .card {
-  width: 150px;
-  height: 200px;
+  position: relative;
+  width: clamp(110px, 18vw, 150px);
+  height: clamp(150px, 25vw, 200px);
   border: 2px solid gold;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
@@ -106,6 +114,12 @@ body.game-active {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.7);
 }
 
+.card.peek {
+  opacity: 0.85;
+  border-style: dashed;
+  pointer-events: none;
+}
+
 @media (max-width: 768px) {
   body,
   #gameTable {
@@ -121,11 +135,29 @@ body.game-active {
     justify-content: center;
     gap: 10px;
   }
+
+  #gameTable {
+    padding: 16px;
+    border-radius: 12px;
+  }
 }
 /* Стили для карты, которая уже была сыграна. */
 .card.played {
   cursor: default; /* Возвращаем курсор в обычное состояние. */
   opacity: 1; /* Делаем карту немного полупрозрачной. */
+}
+
+.card.played.boosted::after {
+  content: "+25";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 215, 0, 0.85);
+  color: #000;
+  padding: 4px 8px;
+  font-weight: bold;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 /* Стили для отображения результата раунда. */
